@@ -1,14 +1,13 @@
 package dao;
 
-
 import model.User;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.persistence.EntityManager;
-
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.List;
+
 
 @Repository
 public class DaoUserImpl implements DaoUser {
@@ -31,7 +30,7 @@ public class DaoUserImpl implements DaoUser {
 
     @Transactional
     @Override
-    public void removeUserById(User user) {
+    public void deleteUser(User user) {
         entityManager.remove(entityManager.contains(user) ? user : entityManager.merge(user));
     }
 
@@ -47,4 +46,13 @@ public class DaoUserImpl implements DaoUser {
         entityManager.merge(userChanges);
 
     }
+
+    @Override
+    public User getUserByName(String name) {
+        Query query= entityManager.createQuery("FROM User where name=: name",User.class);
+        query.setParameter("name",name);
+        User user = (User) query.getSingleResult();
+        return user;
+    }
+
 }

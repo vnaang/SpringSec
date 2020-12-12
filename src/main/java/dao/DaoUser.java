@@ -1,8 +1,8 @@
 package dao;
 
 import model.User;
-
 import java.util.List;
+
 
 public interface DaoUser {
 
@@ -10,9 +10,13 @@ public interface DaoUser {
 
     User getUserById(long id);
 
-    void removeUserById(User user);
+    void deleteUser(User user);
 
     List<User> getAllUsers();
 
     void updateUser(User userChanges);
+
+    User getUserByName(String name);
+
+
 }

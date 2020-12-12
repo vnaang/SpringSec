@@ -1,8 +1,8 @@
 package service;
 
 import model.User;
-
 import java.util.List;
+
 
 public interface ServiceUser {
 
@@ -10,9 +10,13 @@ public interface ServiceUser {
 
     User getUserById(long id);
 
-    void removeUserById(User user);
+    void deleteUser(User user);
+
+    public void saveUser(User user);
 
     List<User> getAllUsers();
 
     void updateUser(User userChanges);
+
+    User getUserByName(String name);
 }

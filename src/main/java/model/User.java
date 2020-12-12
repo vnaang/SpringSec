@@ -1,10 +1,17 @@
 package model;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import model.Role;
+
 
 @Entity
-@Table(schema = "foo",name = "users")
-public class User {
+@Table(schema = "foo", name = "users")
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -17,12 +24,29 @@ public class User {
     @Column
     private int age;
 
-    public User() {}
+    @Column
+    private String password;
 
-    public User(String name, String city, int age){
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_role",
+            joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "role_id")})
+    private Set<Role> roles;
+
+    public User() {
+    }
+
+    public User(String name, String city, int age) {
         this.name = name;
         this.city = city;
         this.age = age;
+
+    }
+    public User(Long id,String name,String password,Set<Role> roles){
+        this.id=id;
+        this.name = name;
+        this.password = password;
+        this.roles = roles;
     }
 
     public long getId() {
@@ -53,6 +77,56 @@ public class User {
         return age;
     }
 
-    public void setAge(int age) { this.age = age; }
-}
+    public void setAge(int age) {
+        this.age = age;
+    }
 
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return name;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+}

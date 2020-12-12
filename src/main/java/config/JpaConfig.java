@@ -1,7 +1,7 @@
 package config;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
@@ -13,24 +13,51 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.view.InternalResourceViewResolver;
-
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import javax.sql.DataSource;
 import java.util.Properties;
+
 
 @Configuration
 @PropertySource("classpath:db.properties")
 @EnableWebMvc
-@ComponentScans({@ComponentScan("controller"),@ComponentScan("dao"),@ComponentScan("service"), @ComponentScan("model")})
+@ComponentScans({@ComponentScan("controller"),@ComponentScan("dao"),@ComponentScan("service"), @ComponentScan("model"),@ComponentScan("security")})
 @EnableTransactionManagement
 public class JpaConfig implements WebMvcConfigurer {
-
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private  ApplicationContext applicationContext;
+
     // beans
+    @Bean
+    public SpringResourceTemplateResolver templateResolver() {
+        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
+        templateResolver.setApplicationContext(applicationContext);
+        templateResolver.setPrefix("/WEB-INF/pages/");
+        templateResolver.setSuffix(".html");
+        return templateResolver;
+    }
+
+    @Bean
+    public SpringTemplateEngine templateEngine() {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver());
+        templateEngine.setEnableSpringELCompiler(true);
+        return templateEngine;
+    }
+
+    @Override
+    public void configureViewResolvers(ViewResolverRegistry registry) {
+        ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+        resolver.setTemplateEngine(templateEngine());
+        registry.viewResolver(resolver);
+    }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
@@ -76,11 +103,4 @@ public class JpaConfig implements WebMvcConfigurer {
         return hibernateProperties;
     }
 
-    @Bean(name = "viewResolver")
-    public InternalResourceViewResolver getViewResolver() {
-        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
-        viewResolver.setPrefix("/WEB-INF/pages/");
-        viewResolver.setSuffix(".jsp");
-        return viewResolver;
-    }
 }
